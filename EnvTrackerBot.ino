@@ -1,11 +1,9 @@
 /*  Terra Sintopica - EnvTrackerBot
  * 
- *  Este Bot mede a humidade do solo, luminosidade, 
- *  temperatura e umidade ambiente em tempo real com 
- *  o auxilio de um modulo RTC(DS1302) e guarda os dados 
- *  num formato csv em ficheiro txt no micro cartao SD acopulado.
- *  Estes modulos sao alimentados por placa de gestao de energia solar da DFRobot
- *  para painel de 5v
+ *  This Bot measures soil humidity, solar luminosity,
+ *  env temperature and humidity in real time w/ module RTC(DS1302)
+ *  Stores sensor data in a SD card w/ csv format
+ *  The bot is feeded by solar energy in a 5v solar panel managed by a DFRobot board
  *  
  *  Libs:
  *    for DHT sensor - DHT
@@ -13,34 +11,35 @@
  *    for SD card - SPI & SD
  *    for RTC - virtuabotixRTC
  */
+
 #include "LowPower.h"
 #include <virtuabotixRTC.h> 
 #include <SPI.h>
 #include <SD.h>
 #include "DHT.h"
 
-#define DHTPIN A5               // Inicializacao do sensor dht
+#define DHTPIN A5               // dht startup
 #define DHTTYPE DHT11
 DHT dht(DHTPIN, DHTTYPE);
-int pw_dht = 4;                 // Pino de alimentacao de sensor dht
-String dhtVals = "";            // Para recever os valores de dht humidity e dht temperature
+int pw_dht = 4;                 // dht sensor feeding pin
+String dhtVals = "";            // to treat dht temperature and humidity values
 
-#define soilhumPin A4           // Pino Analogico para sensor de umidade
-int soilhumVal;                 // valor da umidade do solo
-int pw_sh = 3;                  // Pino de alimentacao de sensor de umidade do solo
+#define soilhumPin A4           // Analog pin for dht
+int soilhumVal;                 // soil humidity value
+int pw_sh = 3;                  // soil humidity sensor feeding pin
 
-#define lumnsPin A3             // Pino Analogico para sensor de luminosidade
-int lumnsVal;                   // Valor de lums
-int pw_lumns = 2;               // Pino de alimentacao de sensor de luminosidade
+#define lumnsPin A3             // Analog pin for solar intensidy
+int lumnsVal;                   // lums value
+int pw_lumns = 2;               // luminosity sensor feeding pin
 
-int DFRobotPower = 5;           // Pino para alimentar RTC e microSD modulos apartir da placa de gestao de energia solar
-#define batteryLife A2          // Pino analogico para ler valor da bateria
+int DFRobotPower = 5;           // feeding pin for RTC and microSD modules form DFRobot board
+#define batteryLife A2          // Analog pin for battery life value
 int batLife;                     // The Battery current life, updated from batCheck() function
 
 File dataFile;                  
-String data;                    // string para armazenar a leitura dos sensores e transformar em char
+String data;                    // string bo be transformed - receive sensor data
 
-virtuabotixRTC myRTC(8, 7, 6);  // Cria e inicia o Real Time Clock Object - Pins (SCLK, Data I/O, Chip Enabled)
+virtuabotixRTC myRTC(8, 7, 6);  // startup Real Time Clock Object - Pins (SCLK, Data I/O, Chip Enabled)
 
 
 void setup() {
@@ -50,15 +49,15 @@ void setup() {
     ; //for serial check
   }
 
-  initSensores();               // Inicia Sensores
-  batteryCheck();               // Verifica Estado da Bateria
-  //rtcSETUP();                   // Configurar metodo para hora atual a guardar pelo sistema 
+  initSensores();               // Begins sensors
+  batteryCheck();               // Verify baterry life
+  //rtcSETUP();                   // ATENTION:Configure RTC time before replae in the field, comment this line after
   
   delay(500);
 }
 
 void loop() {
-  // le valores de sensores analogicos
+  // read analog sensor values
   dhtVals = getDHTVals(pw_dht);
   soilhumVal = getAnalogSensorReading(soilhumPin, pw_sh);
   lumnsVal = getAnalogSensorReading(lumnsPin, pw_lumns);
@@ -66,14 +65,14 @@ void loop() {
   
   batteryCheck();
   
-  // alimenta os modulos RTC e microSDcard
+  // feed modules RTC and microSDcard
   digitalWrite(DFRobotPower, HIGH);
   delay(500);
   
   if (SD.begin(10)){
-    // constroi string em formato csv
+    // build string csv
     data = getCurrentTime()+","+batLife+","+dhtVals+","+soilhumVal+","+lumnsVal;
-    // abre ficheiro, converte data string para char, grava datatemp e fecha o ficheiro.
+    // open file, convert data string to char, save datatemp and dlose file.
     openFile("spotdata.txt");
     char datatemp[50];
     data.toCharArray(datatemp,50);
@@ -83,15 +82,15 @@ void loop() {
     Serial.println("sd card initialization failed");
   }
   
-  //corta alimentacao dos modulos RTC e sdCard
+  //power off RTC and sdCard slaves
   digitalWrite(DFRobotPower, LOW);
   
-  // dorme por 8 sec
+  // sleeps 8 sec
   LowPower.idle(SLEEP_8S, ADC_OFF, TIMER2_OFF, TIMER1_OFF, TIMER0_OFF,SPI_OFF, USART0_OFF, TWI_OFF);  
 }
 
 
-// **** FUNCOES ****
+// **** FUNCTIONS ****
 void batteryCheck(){
   //Serial.print("Battery life ");
   batLife = analogRead(batteryLife);  
@@ -152,7 +151,7 @@ void initSensores(){
   pinMode(pw_dht,OUTPUT);
   pinMode(pw_sh,OUTPUT);
   pinMode(pw_lumns,OUTPUT);
-  // pino digital para comunicar comunicar com a placa de gestao de energia solar
+  // digital pin for comunicate with solar management board
   pinMode(DFRobotPower,OUTPUT);
   dht.begin();
 }

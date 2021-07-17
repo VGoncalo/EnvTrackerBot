@@ -1,16 +1,11 @@
 # -*- coding: utf-8 -*-
-"""
-Created on Thu Jun 25 23:37:47 2020
-
-@author: Costa
-"""
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gds
 
 dados = pd.read_csv("SHBOT.txt")
 
-# Remove valores 0:0:0 correspondentes a modulo RTC sem energia
+# Remove 0:0:0 values - no energy in RTC
 dadosR = dados.drop(dados[dados.Time == '0:0:0'].index)
 
 #dados.plot()
@@ -21,7 +16,7 @@ sh = dadosR.iloc[:,4]
 lumns = dadosR.iloc[:,5]
 
        
-    
+# Comment/Uncomment to draw different graphs
 """
 # Plot Bateria com Tempo
 fig, ax = plt.subplots()
