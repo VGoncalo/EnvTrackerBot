@@ -1,5 +1,4 @@
-/*  Terra Sintopica - EnvTrackerBot
- * 
+/*   
  *  This Bot measures soil humidity, solar luminosity,
  *  env temperature and humidity in real time w/ module RTC(DS1302)
  *  Stores sensor data in a SD card w/ csv format
